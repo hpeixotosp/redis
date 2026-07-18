@@ -353,7 +353,7 @@ export default function HomePage() {
                   {initials(srv.nome)}
                 </div>
                 <div className="server-info">
-                  <div className="server-name" title={srv.nome}>{srv.nome.split(" ")[0]} {srv.nome.split(" ")[1]}</div>
+                  <div className="server-name" title={srv.nome}>{srv.nome.split(" ")[0]}</div>
                   <div className="server-meta">{srv.orgaoDestino}</div>
                 </div>
                 <span className="server-pct" style={{ color }}>{pct}%</span>
