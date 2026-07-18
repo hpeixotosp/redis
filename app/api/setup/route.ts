@@ -12,13 +12,16 @@ import {
 import { neon } from "@neondatabase/serverless";
 import { NextResponse } from "next/server";
 
-// POST /api/setup — cria tabelas e popula o banco
-// Protegido por token simples: POST com header Authorization: Bearer setup-redistribuicao
+// Aceita GET ou POST para facilitar a carga de dados direto pelo navegador
+export async function GET(req: Request) {
+  return handleSetup(req);
+}
+
 export async function POST(req: Request) {
-  const auth = req.headers.get("Authorization");
-  if (auth !== "Bearer setup-redistribuicao") {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
+  return handleSetup(req);
+}
+
+async function handleSetup(req: Request) {
 
   if (!process.env.DATABASE_URL) {
     return NextResponse.json(
