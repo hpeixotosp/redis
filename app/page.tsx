@@ -18,7 +18,7 @@ type ServidorDetalhe = { servidor: { id: string; nome: string; cargo: string; or
 const AVATAR_COLORS = ["#2563eb","#7c3aed","#059669","#d97706","#db2777"];
 
 function initials(nome: string) {
-  return nome.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  return nome.split(" ")[0][0].toUpperCase();
 }
 
 function pctColor(pct: number) {
@@ -85,21 +85,47 @@ function DocItem({ doc, readonly, onToggle }: { doc: Documento; readonly?: boole
 
 // ─── Andamento ────────────────────────────────────────────────────────────────
 function AndamentoSection({ servidorId, logs: init }: { servidorId: string; logs: AndamentoLog[]; }) {
+  // Retorna a data de hoje no formato yyyy-MM-dd
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const [logs, setLogs]       = useState(init);
-  const [data, setData]       = useState("");
+  const [data, setData]       = useState(getTodayString());
   const [obs, setObs]         = useState("");
   const [saving, setSaving]   = useState(false);
   const [delId, setDelId]     = useState<string | null>(null);
 
+  // Formata yyyy-MM-dd para dd/MM/yyyy na exibição
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    if (dateStr.includes("-")) {
+      const [yyyy, mm, dd] = dateStr.split("-");
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    return dateStr;
+  };
+
   const handleAdd = async () => {
     if (!data.trim() || !obs.trim()) return;
     setSaving(true);
+    // Envia no formato dd/MM/yyyy amigável
+    const formattedDate = formatDisplayDate(data);
     const res = await fetch(`/api/andamento/${servidorId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataRegistro: data, observacao: obs }),
+      body: JSON.stringify({ dataRegistro: formattedDate, observacao: obs }),
     });
-    if (res.ok) { const novo = await res.json(); setLogs(p => [...p, novo]); setData(""); setObs(""); }
+    if (res.ok) { 
+      const novo = await res.json(); 
+      setLogs(p => [...p, novo]); 
+      setData(getTodayString()); 
+      setObs(""); 
+    }
     setSaving(false);
   };
 
@@ -143,7 +169,13 @@ function AndamentoSection({ servidorId, logs: init }: { servidorId: string; logs
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Data</label>
-            <input className="form-input" placeholder="ex: 18/07/2026" value={data} onChange={e => setData(e.target.value)} />
+            <input 
+              type="date" 
+              className="form-input" 
+              value={data} 
+              onChange={e => setData(e.target.value)} 
+              style={{ colorScheme: "dark" }}
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Observação</label>
